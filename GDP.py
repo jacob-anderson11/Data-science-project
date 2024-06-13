@@ -70,6 +70,7 @@ file_name = "gdp_by_sector" #how the file name will be stored in your files
 ons_data_downloader(gdp_link, file_name, "Data_table", 3) #This code downloads the data from the ONS website, saves it under a specific name, with the last number being the number of rows skipped so only the necessary data is processed. 'Data_table' is the name of the tab the data is downloaded from
 
 GDP_data_sectors = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/gdp_by_sector.csv") #Saving the data in this specific folder
+#UPDATE WITH LINK TO OWN DATA FILE PATH
 GDP_data_sectors = GDP_data_sectors[["Month","Monthly GDP (A-T)", "Agriculture (A)", "Construction (F) [note1],[note 2]", "Production (B-E)", "Services (G-T)"]] #This is a list of the column names used. Ensure they are exactly the same as those being downloaded in the data (check for spaces and capital letters)
 
 GDP_data_sectors = convert_ONS_date_to_date_time(GDP_data_sectors)
@@ -140,18 +141,29 @@ plt.show()
 # GDP_by_expenditure = GDP_by_expenditure[["Time period", "Consumption", "Government", "Investment", "Net trade", "GDP (LESS STATS DISCREPANCY)", "GDP"]]
 
 # def GDP_expend_calc(df1, col1):
+#     df1 = df1.reset_index()
+#     cols = df1.columns.drop('index')
+#     df1[cols] = df1[cols].apply(pd.to_numeric, errors='coerce')
 #     output_df1 = df1.copy()
-#     output_df1[col1][0] = 100*((df1[col1][1] / df1[col1][0]) - 1)
-#     output_df1[col1][1] = 100*((df1[col1][2] / df1[col1][1]) - 1)
-#     output_df1[col1][2] = 100*((df1[col1][3] / df1[col1][2]) - 1)
-#     output_df1[col1][3] = 100*((df1[col1][4] / df1[col1][3]) - 1)
-    
+#     output_df1[col1][0] = 100*((df1[col1][1] - df1[col1][0])/df1["GDP"][0])
+#     output_df1[col1][1] = 100*((df1[col1][2] - df1[col1][1])/df1["GDP"][1])
+#     output_df1[col1][2] = 100*((df1[col1][3] - df1[col1][2])/df1["GDP"][2])
+#     output_df1[col1][3] = 100*((df1[col1][4] - df1[col1][3])/df1["GDP"][3])
 #     return output_df1[col1]
+    
+# def GDP_expend_calc1(df, col):
+#     output_df = df.copy()
+#     output_df[col][0] = 100*((df[col][1] / df[col][0]) - 1)
+#     output_df[col][1] = 100*((df[col][2] / df[col][1]) - 1)
+#     output_df[col][2] = 100*((df[col][2] / df[col][0]) - 1)
+#     return output_df[col]
+    
 # combined_df1 = pd.DataFrame()
 # col1_list = GDP_by_expenditure.columns[1:]
 # for col1 in col1_list:
 #     Output_df1 = GDP_expend_calc(GDP_by_expenditure, col1)
 #     combined_df1 = pd.concat([combined_df1, Output_df1], axis=1)
+# combined_df1 = combined_df1.iloc[0 : 4, : ]
 
     
 #Chart 6 - Contributions to changes in monthly GDP by sector 
@@ -166,7 +178,7 @@ GDP_sectors_month = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Pro
 GDP_sectors_month = GDP_sectors_month[["Date", "GDP", "Services", "Production", "Construction"]] #Ensure these variable names match those in the dataset (be careful of capital letters and spaces)
 
 fig, ax =plt.subplots()
-plt.plot(GDP_sectors_month["Date"], GDP_sectors_month["GDP"], color="#206095") #Plotting the line graph of GDP first
+plt.plot(GDP_sectors_month["Date"], GDP_sectors_month["GDP"], color="#206095", linewidth="2.0") #Plotting the line graph of GDP first
 
 GDP_sectors_month[["Date", "Services", "Construction", "Production"]].plot("Date",kind="bar", stacked=True, ax=ax, color=["#27a0cc","#003c57", "#118c7b"]) #Now creating a stacked barplot with the rest of the variables
 plt.ylabel("%", fontname="Arial", fontsize="12", rotation=0, loc="top", labelpad=-45) #y-axis label
@@ -194,7 +206,7 @@ GDP_contributions[["Unnamed: 0", "Monthly"]].plot("Unnamed: 0",kind="barh", stac
 
 plt.xlabel("Percentage points") #x-axis label
 ax.set_frame_on(False) #Removes frame off the chart
-plt.title("Contributions to changes in Feb GDP", fontweight="bold", fontname="Arial", fontsize="12") #Title
+plt.title("Contributions to changes in Feb GDP: services", fontweight="bold", fontname="Arial", fontsize="12") #Title
 plt.axvline(0, color="black", linewidth=0.5)
 plt.axhline(-1, color="black", linewidth=0.5) #Both lines for formatting
 ax.set_xlim(left=-0.102, right=0.102); #x-axis scale
@@ -214,7 +226,7 @@ GDP_contributions.plot("Unnamed: 0",kind="barh", stacked=False, ax=ax, color=["#
 plt.xlabel("Percentage points") #x-axis label
 ax.set_frame_on(False) #Removing chart frame
 plt.ylabel("") #No y-label needed hence left blank
-plt.title("Contributions to changes in Feb GDP", fontweight="bold", fontname="Arial", fontsize="12") #Title
+plt.title("Contributions to changes in Feb GDP: services", fontweight="bold", fontname="Arial", fontsize="12") #Title
 ax.set_xlim(left=-0.102, right=0.102); #y-axis scale
 plt.legend(["Monthly", "Three month"], loc="upper center", bbox_to_anchor=(0.5,-0.12), ncol=2, frameon=False)#Altering the legend
 plt.axvline(0, color="black", linewidth=0.5)
@@ -246,20 +258,13 @@ for col in col_list:
     combined_df = pd.concat([combined_df, Output_df], axis=1)
 
 combined_df = combined_df.T
-print(combined_df.columns.tolist())  # print out the column names
 combined_df.columns = ["Q3 2023", "Q4 2023", "H2 2023"] 
+combined_df = combined_df.reset_index()
 
 fig, ax = plt.subplots()
-for i, col in enumerate(combined_df.columns):
-    if i == 2:  # H2 2023
-        ax.plot(combined_df.index, combined_df.iloc[:, i], marker='*', linestyle='None', label='H2 2023')
-    else:
-        ax.bar(combined_df.index, combined_df.iloc[:, i], label=f'Q{i+3} 2023' if i == 0 else f'Q{i+3} 2023')
-ax.set_title('Growth Rates')
-ax.set_xlabel('Variable Names')
-ax.set_ylabel('Growth Rate')
-ax.legend()
-plt.show()
+plt.plot(combined_df["index"], combined_df["H2 2023"], marker="*")
+combined_df[["index", "Q3 2023","Q4 2023"]].plot(kind="bar", stacked=True, ax=ax, x="index")
+
 
 
 #Chart 10 - Quarterly change in GDP per capita
