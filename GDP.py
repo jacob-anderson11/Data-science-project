@@ -1,9 +1,14 @@
+#Importing of packages
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
 import textwrap 
-from matplotlib.dates import DateFormatter, MonthLocator #Importing the packages needed throughout
+from matplotlib.dates import DateFormatter, MonthLocator
+
+
+#Creation of functions
 
 def wrap_ylabels(ax, width, break_long_words=False):
  labels = []
@@ -28,25 +33,18 @@ def customise_axes(ax):
     ax.grid(b=True, which = "major", axis = "x", color = "white")
     ax.grid(b=True, which = "major", axis = "y", color = "lightblue")
     plt.xlabel("") #This code is defining a function, specifying desired parameters that can be called upon for charts
-    
-# def indexed_time_series(data, start_period, series_name): 
-#     data[series_name] = 100 * data[series_name] / (data[data["Time period and dataset code row"] == start_period][series_name].iloc[0])
-#     data["date time"] = data["Time period and dataset code row"].str.replace(" ", "-")
-#     start_period = start_period.replace(" ", "-")
-#     data["date time"] = pd.to_datetime(data["date time"])
-#     data = data[data["date time"] >= start_period]
-#     return data #A function created to index raw data
 
 
 def indexed_time_series(data, start_period, series_name):
     data[series_name] = pd.to_numeric(data[series_name], errors='coerce')
+    print(data["Time period and dataset code row"])
     start_value = pd.to_numeric(data[data["Time period and dataset code row"] == start_period][series_name].iloc[0], errors='coerce')
     data[series_name] = 100 * data[series_name] / start_value
     data["date time"] = data["Time period and dataset code row"].str.replace(" ", "-")
     start_period = start_period.replace(" ", "-")
     data["date time"] = pd.to_datetime(data["date time"])
     data = data[data["date time"] >= start_period]
-    return data
+    return data #This function is used on charts where indexed calculations need to be performed within python
 
 
 requests.packages.urllib3.disable_warnings()
@@ -55,15 +53,16 @@ def ons_data_downloader(link, output_file_name, tab_name, skip_rows):
     with open('data/raw/' + output_file_name + '.xlsx', 'wb') as file:
         file.write(response.content)
     data_tab = pd.read_excel('//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/raw/' + output_file_name + '.xlsx', sheet_name=tab_name, skiprows=skip_rows)
-#UPDATE: change file path to own computer. Create folders as such for ease
+#UPDATE: CHANGE FILE PATH
     data_tab.to_csv('//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/'  +  output_file_name + '.csv', index=False)
-#UPDATE: change file path to own computer. Create folders as such for ease
+#UPDATE: CHANGE FILE PATH
     return    #This function allows us to download the data directly from the ONS website. It stores the original in the 'raw' and the data we will then use in 'processed'.
 
-
-#GDP SECTION:
+    
     
 #Chart 1 - An index of monthly GDP and the four main sectors
+
+
 gdp_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/monthlygdpandmainsectorstofourdecimalplaces/1997tocurrent/monthlygdpto4dp.xlsx" 
 #UPDATE: Make sure link is up-to-date to the latest dataset available 
 file_name = "gdp_by_sector" #how the file name will be stored in your files
@@ -89,7 +88,7 @@ plt.plot(GDP_data_sectors["Date"],GDP_data_sectors["Agriculture (A)"], color="#2
 plt.plot(GDP_data_sectors["Date"],GDP_data_sectors["Construction (F) [note1],[note 2]"], color="#003c57", linewidth="2.0")
 plt.plot(GDP_data_sectors["Date"],GDP_data_sectors["Production (B-E)"] ,color="#118c7b", linewidth="2.0")
 plt.plot(GDP_data_sectors["Date"],GDP_data_sectors["Services (G-T)"], color="#a8bd3a", linewidth="2.0") #This is all plotting the different variables (Y axis) against the month (x axis). Ensure the names exactly match those in the excel document.
-desired_labels = ["Mar 2023", "Sep 2023", "Mar 2024"]
+desired_labels = ["Jan 2023", "Sep 2023", "Apr 2024"]
 ax.set_xticks([GDP_data_sectors["Date"].index[i] for i, label in enumerate(GDP_data_sectors["Date"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #Above we have set what desired labels we would like to show on the x-axis
 plt.title('Main GDP contributors (2019=100)', fontweight="bold", fontname="Arial", fontsize="12") #Title label
@@ -99,76 +98,129 @@ ax.set_ylim(bottom=79.5, top=110); #The y-axis scale
 
 
 #Chart 2 - Just the index of monthly GDP
+
+
 fig,ax = plt.subplots()
 plt.plot(GDP_data_sectors["Date"],GDP_data_sectors["Monthly GDP (A-T)"], color="#206095", linewidth="2.0") #Plotting just the monthly GDP against the month
 
 plt.title('Monthly GDP (2019=100)', fontweight="bold", fontname="Arial", fontsize="12") #Title for the chart
 customise_axes(ax) #Calling in the function defined for chart paramaters
 ax.set_ylim(bottom=99.5, top=105); #y axis scale
-desired_labels = ["Mar 2023", "Sep 2023", "Mar 2024"]
+desired_labels = ["Jan 2023", "Sep 2023", "Apr 2024"]
 ax.set_xticks([GDP_data_sectors["Date"].index[i] for i, label in enumerate(GDP_data_sectors["Date"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #Above we have set what desired labels we would like to show on the x-axis
 plt.show() #Nothing needs updating in chart 2, unless parameters are being changed
 
-#Chart 3 - The change in monthly GDP, month-month and 3month-3month growth
-GDP_data_m_3m = pd.read_excel("//NDATA9/anderj3$/My Documents/Data Science Project/Master file.xlsx", sheet_name="GDP_1.2")
-#UPDATE with latest link
-GDP_data_m_3m = GDP_data_m_3m[["Time period","Month/Month","3m/3m"]]
 
-GDP_data_m_3m["Date"] = pd.to_datetime(GDP_data_m_3m["Time period"], format="%Y %b")
-GDP_data_m_3m["Date"] = GDP_data_m_3m["Date"].dt.strftime("%b %Y")
-ax.set_xticks(GDP_data_m_3m["Date"].index)
-ax.set_xticklabels(GDP_data_m_3m["Date"])
-GDP_data_m_3m = GDP_data_m_3m.drop("Time period", axis=1)#Format the "Date" column as "Feb 2020" from "2020 FEB", and save it under a new variable name "Date"
+#Chart 3 - The change in monthly GDP, month-month and 3month-3month growth
+
+
+GDP_data_m_3m_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/monthlygrossdomesticproductbygrossvalueadded/current/monthlygdptablesapril24.xlsx"
+file_name = "GDP_data_m_3m"
+ons_data_downloader(GDP_data_m_3m_link, file_name, "GVA", 44)
+
+monthly_data_only = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/GDP_data_m_3m.csv")
+monthly_data_only = monthly_data_only.iloc[52:77, [0,2]].reset_index()
+monthly_data_only = monthly_data_only.rename(columns={"[Not applicable]": 'Time period', "ED3H": 'Monthly growth'})
+
+three_month_data_only = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/GDP_data_m_3m.csv")
+three_month_data_only = three_month_data_only.iloc[0:25,[0,2]].reset_index()
+three_month_data_only = three_month_data_only.rename(columns={"[Not applicable]":"Time period", "ED3H":"3 month growth"})
+
+GDP_data_m_3m_processed = pd.merge(monthly_data_only, three_month_data_only, on='Time period')
+GDP_data_m_3m_processed = GDP_data_m_3m_processed[['Time period', 'Monthly growth', '3 month growth']]
+
+GDP_data_m_3m_processed["Monthly growth"] = pd.to_numeric(GDP_data_m_3m_processed["Monthly growth"], errors="coerce")
+#GDP_data_m_3m_processed["Monthly growth"] = pd.to_numeric(GDP_data_m_3m_processed["Monthly growth"], errors="coerce")
+GDP_data_m_3m_processed["3 month growth"] = pd.to_numeric(GDP_data_m_3m_processed["3 month growth"], errors="coerce")
+
+GDP_data_m_3m_processed["Date"] = pd.to_datetime(GDP_data_m_3m_processed["Time period"], format="%Y %b")
+GDP_data_m_3m_processed["Date"] = GDP_data_m_3m_processed["Date"].dt.strftime("%b %Y")
+ax.set_xticks(GDP_data_m_3m_processed["Date"].index)
+ax.set_xticklabels(GDP_data_m_3m_processed["Date"])
+GDP_data_m_3m_processed = GDP_data_m_3m_processed.drop("Time period", axis=1)#Format the "Date" column as "Feb 2020" from "2020 FEB", and save it under a new variable name "Date"
 
 fig,ax =plt.subplots()
-#format_date_column(CPI_QEC_processed, "Unnamed: 0", ax) - Only keep if using the function
-plt.plot(GDP_data_m_3m["Date"],GDP_data_m_3m["Month/Month"], color="#206095", linewidth="2.0") #Line plot of the month/month change against the time period
-
-plt.bar(GDP_data_m_3m["Date"],GDP_data_m_3m["3m/3m"], color='#27a0cc', width=0.8) #Adding a bar plot of 3month/3month change
+plt.plot(GDP_data_m_3m_processed["Date"],GDP_data_m_3m_processed["Monthly growth"], color="#206095", linewidth="2.0") #Line plot of the month/month change against the time period
+plt.bar(GDP_data_m_3m_processed["Date"],GDP_data_m_3m_processed["3 month growth"], color='#27a0cc', width=0.8) #Adding a bar plot of 3month/3month change
 plt.legend(["Month/Month","3month/3month"], loc="upper center", bbox_to_anchor=(0.5,-0.07), ncol=2, frameon=False) #Adding a legend and setting the location
 customise_axes(ax) #Calling upon this function again
 plt.axhline(0, color="black", linewidth=0.5) #For formatting - put a line through the x axis
 ax.set_ylim(bottom=-1.05, top=1); #Setting the y-axis parameters
 ax.xaxis.set_major_locator(plt.MaxNLocator(5)) #Setting the number of ticks on the x-axis
 plt.ylabel("%", fontname="Arial", fontsize="12", rotation=0, loc="top", labelpad=-45) #y-axis label
-plt.title("Changes in monthly GDP", fontweight="bold", fontname="Arial", fontsize="12") #Title for the chart
+plt.title("Changes in GDP", fontweight="bold", fontname="Arial", fontsize="12") #Title for the chart
+plt.ylim(bottom=-1.15, top=1.05)
 plt.show()
+
 
 #Chart 4 and 5 started in notes - Uses calculations so will wait till we get to this
 
-# GDP_by_expenditure = pd.read_excel("//NDATA9/anderj3$/My Documents/Data Science Project/Master file.xlsx", sheet_name="GDP_1.31")
-# GDP_by_expenditure = GDP_by_expenditure[["Time period", "Consumption", "Government", "Investment", "Net trade", "GDP (LESS STATS DISCREPANCY)", "GDP"]]
+GDP_by_expenditure_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/uksecondestimateofgdpdatatables/quarter1jantomar2024quarterlynationalaccounts/quarterlynationalaccountsdatatables.xlsx"
+file_name = "GDP_by_expenditure"
+ons_data_downloader(GDP_by_expenditure_link, file_name, "C2 EXPENDITURE", 87)
 
-# def GDP_expend_calc(df1, col1):
-#     df1 = df1.reset_index()
-#     cols = df1.columns.drop('index')
-#     df1[cols] = df1[cols].apply(pd.to_numeric, errors='coerce')
-#     output_df1 = df1.copy()
-#     output_df1[col1][0] = 100*((df1[col1][1] - df1[col1][0])/df1["GDP"][0])
-#     output_df1[col1][1] = 100*((df1[col1][2] - df1[col1][1])/df1["GDP"][1])
-#     output_df1[col1][2] = 100*((df1[col1][3] - df1[col1][2])/df1["GDP"][2])
-#     output_df1[col1][3] = 100*((df1[col1][4] - df1[col1][3])/df1["GDP"][3])
-#     return output_df1[col1]
+GDP_by_expenditure =  pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/GDP_by_expenditure.csv")
+GDP_by_expenditure_processed = GDP_by_expenditure.iloc[1: ,[0,1,2,3,4,6,8,13,15]].reset_index().copy()
+cols = GDP_by_expenditure_processed.columns.drop('Time period and dataset code row')
+GDP_by_expenditure_processed[cols] = GDP_by_expenditure_processed[cols].apply(pd.to_numeric, downcast = "float", errors='coerce')
+
+GDP_by_expenditure_processed["consumption"] =  GDP_by_expenditure_processed["Households: Final consumption expenditure"] + GDP_by_expenditure_processed["Non-profit institutions: Final consumption expenditure  [note 2, 7]"]
+GDP_by_expenditure_processed["investment"] = GDP_by_expenditure_processed["Gross fixed capital formation: Gross capital formation"] + GDP_by_expenditure_processed["Changes in inventories: Gross capital formation  [note 4]"] + GDP_by_expenditure_processed["Acquisitions less disposals of valuables: Gross capital formation  [note 5]"]
+GDP_by_expenditure_processed["GDP"] = GDP_by_expenditure_processed["Gross domestic product at market prices"]
+
+GDP_by_expenditure_processed.rename(columns={"General Government: Final consumption expenditure":"government", "Trade balance [note 6]":"net trade"}, inplace=True)
+GDP_by_expenditure_processed["GDP (LESS STATS DISCREPANCY)"] = GDP_by_expenditure_processed["consumption"] + GDP_by_expenditure_processed["government"] + GDP_by_expenditure_processed["investment"] + GDP_by_expenditure_processed["net trade"]
+GDP_by_expenditure_processed = GDP_by_expenditure_processed.iloc[ 272:277, [0,1,4,8,10,11,12,13]]
+
+
+def GDP_expend_calc(df1, col1):
+    df1 = df1.reset_index()
+    df1 = df1.drop(["index", "Time period and dataset code row"], axis=1)
+    cols = df1.columns
+    df1[cols] = df1[cols].apply(pd.to_numeric, downcast = "float", errors='coerce')
+    output_df1 = df1.copy()
+    if col1 == "GDP":
+#Explain why...
+        denominator = "GDP"
+    else:
+#Explain why...
+        denominator = "GDP (LESS STATS DISCREPANCY)"
+    output_df1[col1][0] = 100*((df1[col1][1] - df1[col1][0])/df1[denominator][0])
+    output_df1[col1][1] = 100*((df1[col1][2] - df1[col1][1])/df1[denominator][1])
+    output_df1[col1][2] = 100*((df1[col1][3] - df1[col1][2])/df1[denominator][2])
+    output_df1[col1][3] = 100*((df1[col1][4] - df1[col1][3])/df1[denominator][3])
+    return output_df1[col1]
     
-# def GDP_expend_calc1(df, col):
-#     output_df = df.copy()
-#     output_df[col][0] = 100*((df[col][1] / df[col][0]) - 1)
-#     output_df[col][1] = 100*((df[col][2] / df[col][1]) - 1)
-#     output_df[col][2] = 100*((df[col][2] / df[col][0]) - 1)
-#     return output_df[col]
-    
-# combined_df1 = pd.DataFrame()
-# col1_list = GDP_by_expenditure.columns[1:]
-# for col1 in col1_list:
-#     Output_df1 = GDP_expend_calc(GDP_by_expenditure, col1)
-#     combined_df1 = pd.concat([combined_df1, Output_df1], axis=1)
-# combined_df1 = combined_df1.iloc[0 : 4, : ]
+combined_df1 = pd.DataFrame()
+col1_list = GDP_by_expenditure_processed.columns[2:-1]
+for col1 in col1_list:
+    Output_df1 = GDP_expend_calc(GDP_by_expenditure_processed, col1)
+    combined_df1 = pd.concat([combined_df1, Output_df1], axis=1)
+combined_df1 = combined_df1.iloc[0 : 4, : ]
+
+combined_df1.insert(loc=0, column='Time period and dataset code row', value=GDP_by_expenditure_processed['Time period and dataset code row'].values[-4:])
+
+fig, ax = plt.subplots()
+
+plt.plot(combined_df1["Time period and dataset code row"],combined_df1['GDP'], marker='D', linestyle='None', color="#871a5b")
+combined_df1[["Time period and dataset code row", "net trade","government","investment","consumption"]].plot(kind="bar", stacked=True, ax=ax, x="Time period and dataset code row", color=["#206095", "#27a0cc","#118c7b","#003c57"])
+
+customise_axes(ax)
+plt.ylabel("%", fontname="Arial", fontsize="12", rotation=0, loc="top", labelpad=-45)
+plt.title("Contributions to changes in real GDP by expenditure component", fontweight="bold", fontname="Arial", fontsize="10")
+plt.legend(["GDP", "Net trade","Government","Investment","Consumption"], loc="upper center", bbox_to_anchor=(0.5,-0.07), ncol=3, frameon=False)
+plt.ylim(bottom =-1, top =1)
+plt.axhline(0, color="black", linewidth=0.5)
+plt.xticks(rotation=0)
+plt.show()
+
 
     
 #Chart 6 - Contributions to changes in monthly GDP by sector 
 
-gdp_link_sector_changes  = "https://www.ons.gov.uk/generator?uri=/economy/grossdomesticproductgdp/bulletins/gdpmonthlyestimateuk/march2024/332c4b4f&format=xls"
+
+gdp_link_sector_changes  = "https://www.ons.gov.uk/generator?uri=/economy/grossdomesticproductgdp/bulletins/gdpmonthlyestimateuk/april2024/4b66e990&format=xls"
 #UPDATE with latest link, from figure 2 in the GDP bulletin (linked below chart)
 file_name = "gdp_by_sector_monthly" #How the file name will be stored in your files
 ons_data_downloader(gdp_link_sector_changes, file_name, "data", 6) #downloading the data from the ONS website. Again, 'data' is the name of the tab being used, with 6 being the number of rows being skipped
@@ -191,8 +243,11 @@ ax.xaxis.set_major_locator(plt.MaxNLocator(4)) #Setting the number of ticks on t
 ax.xaxis.set_tick_params(rotation=360)
 plt.show()
 
+
 #Chart 7 - Contributions to changes in monthly GDP, month-month
-Contributions_to_monthly_changes_link  = "https://www.ons.gov.uk/generator?uri=/economy/grossdomesticproductgdp/bulletins/gdpmonthlyestimateuk/march2024/fcab48fd&format=xls"
+
+
+Contributions_to_monthly_changes_link  = "https://www.ons.gov.uk/generator?uri=/economy/grossdomesticproductgdp/bulletins/gdpmonthlyestimateuk/april2024/2ca773c2&format=xls"
 #UPDATE with latest link, figure 3 in GDP bulletin (link below chart)
 file_name = "contributions_to_monthly_changes"
 ons_data_downloader(Contributions_to_monthly_changes_link, file_name, "data", 6) #This is doing the same things as previously mentioned. Only need to check the tab is still called 'data', and that we want to skip 6 rows
@@ -206,9 +261,9 @@ GDP_contributions[["Unnamed: 0", "Monthly"]].plot("Unnamed: 0",kind="barh", stac
 
 plt.xlabel("Percentage points") #x-axis label
 ax.set_frame_on(False) #Removes frame off the chart
-plt.title("Contributions to changes in Feb GDP: services", fontweight="bold", fontname="Arial", fontsize="12") #Title
+plt.title("Contributions to changes in Apr GDP: services", fontweight="bold", fontname="Arial", fontsize="12") #Title
 plt.axvline(0, color="black", linewidth=0.5)
-plt.axhline(-1, color="black", linewidth=0.5) #Both lines for formatting
+plt.axhline(-0.4, color="black", linewidth=0.5) #Both lines for formatting
 ax.set_xlim(left=-0.102, right=0.102); #x-axis scale
 ax.grid(b=True, which = "major", axis = "y", color = "white")
 ax.grid(b=True, which = "major", axis = "x", color = "lightblue") #Grid lines for formatting
@@ -218,7 +273,9 @@ wrap_ylabels(ax, 50)
 ax.tick_params(axis='y', labelsize=8)
 plt.show()
 
+
 #Chart 8 - Contributions to changes in monthly GDP, month-month and 3month-3month
+
 
 fig, ax=plt.subplots()
 GDP_contributions.plot("Unnamed: 0",kind="barh", stacked=False, ax=ax, color=["#206095","#27a0cc"]) #Now creating a barplot for month and 3 month changes
@@ -226,8 +283,8 @@ GDP_contributions.plot("Unnamed: 0",kind="barh", stacked=False, ax=ax, color=["#
 plt.xlabel("Percentage points") #x-axis label
 ax.set_frame_on(False) #Removing chart frame
 plt.ylabel("") #No y-label needed hence left blank
-plt.title("Contributions to changes in Feb GDP: services", fontweight="bold", fontname="Arial", fontsize="12") #Title
-ax.set_xlim(left=-0.102, right=0.102); #y-axis scale
+plt.title("Contributions to changes in Apr GDP: services", fontweight="bold", fontname="Arial", fontsize="12") #Title
+ax.set_xlim(left=-0.102, right=0.102); #x-axis scale
 plt.legend(["Monthly", "Three month"], loc="upper center", bbox_to_anchor=(0.5,-0.12), ncol=2, frameon=False)#Altering the legend
 plt.axvline(0, color="black", linewidth=0.5)
 plt.axhline(-0.5, color="black") #Grid lines for formatting
@@ -239,37 +296,57 @@ ax.tick_params(axis='y', labelsize=8)
 plt.show()
 
 
-#Chart 9 - Uses calcs so will wait 
+#Chart 9 - Contributions to UK real GVA 
 
-Real_GVA = pd.read_excel("//NDATA9/anderj3$/My Documents/Data Science Project/Master file.xlsx", sheet_name="GDP_1.6")
-Real_GVA = Real_GVA[["Time period", "Agriculture, forestry & fishing: Production", "Total production", "Construction", "Total service industries", "Gross value added at basic prices  [note 4]"]]
+
+Real_GVA_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/uksecondestimateofgdpdatatables/quarter1jantomar2024quarterlynationalaccounts/quarterlynationalaccountsdatatables.xlsx"
+file_name = "Real_GVA"
+ons_data_downloader(Real_GVA_link, file_name, "B1 CVM OUTPUT", 47)
+
+Real_GVA = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/Real_GVA.csv")
+Real_GVA = Real_GVA.iloc[134:137, [0, 1, 6, 7, 12, 13]].reset_index()
+
+Real_GVA["Agriculture"] = pd.to_numeric(Real_GVA["L2KL"], errors="coerce")
+Real_GVA["Production"] = pd.to_numeric(Real_GVA["L2KQ"], errors="coerce")
+Real_GVA["Construction"] = pd.to_numeric(Real_GVA["L2N8"], errors="coerce")
+Real_GVA["Services"] = pd.to_numeric(Real_GVA["L2NC"], errors="coerce")
+Real_GVA["Total GVA"] = pd.to_numeric(Real_GVA["CGCE"], errors="coerce")
+Real_GVA = Real_GVA.iloc[:, [1,7,8,9,10,11]]
 
 def Real_GVA_calc(df, col):
     output_df = df.copy()
-    output_df[col][0] = 100*((df[col][1] / df[col][0]) - 1)
-    output_df[col][1] = 100*((df[col][2] / df[col][1]) - 1)
-    output_df[col][2] = 100*((df[col][2] / df[col][0]) - 1)
+    output_df.loc[0, col] = 100*((df[col][1] / df[col][0]) - 1)
+    output_df.loc[1, col] = 100*((df[col][2] / df[col][1]) - 1)
+    output_df.loc[2, col] = 100*((df[col][2] / df[col][0]) - 1)
     return output_df[col]
 
-combined_df = pd.DataFrame()
+Real_GVA_processed = pd.DataFrame()
 col_list = Real_GVA.columns[1:]
 for col in col_list:
     Output_df = Real_GVA_calc(Real_GVA, col)
-    combined_df = pd.concat([combined_df, Output_df], axis=1)
+    Real_GVA_processed = pd.concat([Real_GVA_processed, Output_df], axis=1)
 
-combined_df = combined_df.T
-combined_df.columns = ["Q3 2023", "Q4 2023", "H2 2023"] 
-combined_df = combined_df.reset_index()
+Real_GVA_processed = Real_GVA_processed.T
+Real_GVA_processed.columns = ["Q4 2023", "Q1 2024", "Q3 2023 - Q1 2024"] 
+Real_GVA_processed = Real_GVA_processed.reset_index()
 
 fig, ax = plt.subplots()
-plt.plot(combined_df["index"], combined_df["H2 2023"], marker="*")
-combined_df[["index", "Q3 2023","Q4 2023"]].plot(kind="bar", stacked=True, ax=ax, x="index")
-
+plt.plot(Real_GVA_processed["index"], Real_GVA_processed["Q3 2023 - Q1 2024"], marker="*", linestyle="None", color="#871a5b")
+Real_GVA_processed[["index", "Q4 2023","Q1 2024"]].plot(kind="bar", stacked=True, ax=ax, x="index", color=["#206095", "#27a0cc"])
+customise_axes(ax)
+plt.title("Real GVA contributions", fontweight="bold", fontname="Arial", fontsize="12")
+plt.legend(["Q3 2023 - Q1 2024", "Q4 2023", "Q1 2024"], loc="upper center", bbox_to_anchor=(0.5,-0.12), ncol=2, frameon=False)
+plt.ylabel("%", rotation=0, loc="top", labelpad=-35)
+plt.axhline(0, color="black", linewidth="0.5") #Grid lines for formatting
+plt.ylim(bottom=-2.1, top=1)
+plt.setp(ax.get_xticklabels(), rotation=0)
+plt.show()
 
 
 #Chart 10 - Quarterly change in GDP per capita
 
-PC_quarterly_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/uksecondestimateofgdpdatatables/quarter1jantomar2024firstestimate/firstquarterlyestimateofgdpdatatables.xlsx"
+
+PC_quarterly_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/uksecondestimateofgdpdatatables/quarter1jantomar2024quarterlynationalaccounts/quarterlynationalaccountsdatatables.xlsx"
 file_name = "GDP_per_capita_quarterly_change"
 ons_data_downloader(PC_quarterly_link, file_name, "P GDP per head", 432)
 
@@ -290,7 +367,9 @@ ax.set_xticks([PC_quarterly["Dataset identifier"].index[i] for i, label in enume
 ax.set_xticklabels([label.split(" ")[1] + " " + label.split(" ")[0] for label in desired_labels], rotation=0)
 plt.show()
 
+
 #Chart 11 - GDP per capita indexed
+
 
 ons_data_downloader(PC_quarterly_link, file_name, "P GDP per head", 78)
 PC_quarterly_index = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/GDP_per_capita_quarterly_change.csv")
@@ -314,15 +393,16 @@ ax.set_ylim(bottom=83, top=115); #Setting the y-axis parameters
 customise_axes(ax) #Calling upon this function
 plt.show()
 
+
 #Chart 12 - Public sector net debt as a percentage of GDP
 
+
 Debt_GDP_link  = "https://www.ons.gov.uk/generator?format=xls&uri=/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/ruto/pusf"
-#UPDATE with latest link, figure 3 in GDP bulletin (link below chart)
 file_name = "Public_debt_%_GDP"
 ons_data_downloader(Debt_GDP_link, file_name, "data", 253)
 
 Debt_GDP = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/Public_debt_%_GDP.csv")
-Debt_GDP = Debt_GDP[["2024 Q1", "111.8"]]
+Debt_GDP = Debt_GDP[["2024 Q1", "112"]]
 
 fig,ax=plt.subplots()
 Debt_GDP["Date"] = pd.to_datetime(Debt_GDP["2024 Q1"], format="%Y %b")
@@ -331,32 +411,35 @@ ax.set_xticks(Debt_GDP["Date"].index)
 ax.set_xticklabels(Debt_GDP["Date"])
 Debt_GDP = Debt_GDP.drop("2024 Q1", axis=1)#Format the "Date" column as "Feb 2020" from "2020 FEB", and save it under a new variable name "Date"
 
-plt.plot(Debt_GDP["Date"], Debt_GDP["111.8"], color="#206095") #Creating a plot of net debt as a % of GDP across time (when downloading data from the ONS website, after we skip rows to get to the )
+plt.plot(Debt_GDP["Date"], Debt_GDP["112"], color="#206095") #Creating a plot of net debt as a % of GDP across time (when downloading data from the ONS website, after we skip rows to get to the )
 plt.ylabel("%", rotation=0, loc="top", labelpad=-35) #y-axis label
 plt.title("Net debt as a percentage of GDP", fontweight="bold", fontname="Arial", fontsize="12") #Title
 customise_axes(ax) #Calling upon the function again to set chart parameters
-desired_labels = ["Mar 1993", "Mar 2001", "Mar 2009", "Mar 2017", "Mar 2024"]
+desired_labels = ["May 1993", "May 2001", "May 2009", "May 2017", "May 2024"]
 ax.set_xticks([Debt_GDP["Date"].index[i] for i, label in enumerate(Debt_GDP["Date"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #Above we have set what desired labels we would like to show on the x-axis
 ax.set_ylim(bottom=20, top=163) #Setting the y-axis porameters
 plt.show()
 
+
 #Chart 13 - Post-reccesion GDP indexed
 
-post_recession_GDP = pd.read_excel("//NDATA9/anderj3$/My Documents/Data Science Project/Master file.xlsx", sheet_name="GDP_1.10")
-post_recession_GDP = post_recession_GDP[["Time period and dataset code row", "Gross domestic product at market prices: Chained volume measure"]]
 
-# post_recession_GDP_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/realtimedatabaseforukgdpabmi/quarter1jantomar2024firstestimate/gdpinchainedvolumemeasuresrealtimedatabaseabmi.xlsx"
-# file_name = "post_recession_GDP"
-# ons_data_downloader(post_recession_GDP_link, file_name, "2018 - ", 2)
+post_recession_GDP_link = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/realtimedatabaseforukgdpabmi/quarter1jantomar2024quarterlynationalaccounts/gdpinchainedvolumemeasuresrealtimedatabaseabmi.xlsx"
+file_name = "post_recession_GDP"
+ons_data_downloader(post_recession_GDP_link, file_name, "2018 - ", 2)
 
-# post_recession_GDP = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/post_recession_GDP.csv")
-# post_recession_GDP_processed = post_recession_GDP.iloc[1:, [0, -1]]
+post_recession_GDP = pd.read_csv("//NDATA9/anderj3$/My Documents/Data Science Project/Code/data/processed/post_recession_GDP.csv")
+post_recession_GDP1 = post_recession_GDP.iloc[1:, [0, -1]]
+post_recession_GDP1.columns = ["Time period and dataset code row", "Gross domestic product at market prices: Chained volume measure"]
+
+post_recession_GDP1["Time period and dataset code row"] = post_recession_GDP1["Time period and dataset code row"].str.split(" ").str[1] + " " + post_recession_GDP1["Time period and dataset code row"].str.split(" ").str[0] 
+
 
 recession_dates = ["1973 Q2", "1979 Q4", "1990 Q2", "2008 Q1", "2023 Q2"] 
 combined_data = pd.DataFrame()
 for date in recession_dates:
-      post_recession_GDP_processed = indexed_time_series(post_recession_GDP, date, "Gross domestic product at market prices: Chained volume measure")
+      post_recession_GDP_processed = indexed_time_series(post_recession_GDP1, date, "Gross domestic product at market prices: Chained volume measure")
       post_recession_GDP_processed[date] = post_recession_GDP_processed["Gross domestic product at market prices: Chained volume measure"]
       post_recession_GDP_processed = post_recession_GDP_processed.iloc[0:16, :].reset_index()
       post_recession_GDP_processed = post_recession_GDP_processed[["Time period and dataset code row", date]]

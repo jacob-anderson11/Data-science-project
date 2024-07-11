@@ -31,7 +31,7 @@ def ons_data_downloader(link, output_file_name, tab_name, skip_rows):
 
 #Chart 1 - Current account balances
 
-CA_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/octobertodecember2023/c7ed4d23&format=xls"
+CA_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/januarytomarch2024/fb628ee3&format=xls"
 #UPDATE with latest link from the BOP bulletin, copy link from chart link
 file_name = "current_account_balances" #This is what we are saving the data as in our files
 ons_data_downloader(CA_link, file_name, "data", 6) #CA link is the name of the link created when downnloading the data, file name is the name we give the file, 'data' is the name of the tab the data is being downloaded from, 6 is the number of rows skipped to acquire the necessary info
@@ -51,7 +51,7 @@ plt.ylabel("% of GDP", rotation=0, loc="top", labelpad=-70) #y-axis label - rota
 plt.title("Current account balances", fontweight="bold", fontname="Arial", fontsize="12") #Title
 customise_axes(ax) #Calling upon the function used to set chart parameters
 ax.set_ylim(bottom=-16, top=10) #y-axis scale
-desired_labels = ["Q1 2021", "Q1 2022", "Q1 2023","Q4 2023"]
+desired_labels = ["Q2 2021", "Q1 2022", "Q1 2023","Q1 2024"]
 #UPDATE the desired labels to what is wanted
 ax.set_xticks([current_account["Unnamed: 0"].index[i] for i, label in enumerate(current_account["Unnamed: 0"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #These 3 lines of code are allowing us the ability to decide what x labels we want on show
@@ -59,7 +59,7 @@ plt.show()
 
 #Chart 2 - Trade balance
 
-TB_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/octobertodecember2023/8156470c&format=xls"
+TB_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/januarytomarch2024/7da21580&format=xls"
 file_name = "trade_balance"
 ons_data_downloader(TB_link, file_name, "data", 6)#TB link is the name of the link created when downnloading the data, file name is the name we give the file, 'data' is the name of the tab the data is being downloaded from, 6 is the number of rows skipped to acquire the necessary info
 
@@ -77,7 +77,7 @@ plt.ylabel(" £ billion", rotation=0, loc="top", labelpad=-70) #y-axis label - r
 plt.title("Trade balance", fontweight="bold", fontname="Arial", fontsize="12") #Title
 customise_axes(ax) #Adding the common set of parameters defined at the beginning
 ax.set_ylim(bottom=-81, top=60) #y-axis paramaters
-desired_labels = ["Q1 2021", "Q1 2022", "Q1 2023","Q4 2023"]
+desired_labels = ["Q2 2021", "Q1 2022", "Q1 2023","Q1 2024"]
 #UPDATE the desired labels to what is wanted
 ax.set_xticks([trade_balance["Unnamed: 0"].index[i] for i, label in enumerate(trade_balance["Unnamed: 0"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #These 3 lines of code are allowing us the ability to decide what x labels we want on show
@@ -85,7 +85,7 @@ plt.show()
 
 #Chart 3 - Primary income account
 
-PI_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/octobertodecember2023/deba072c&format=xls"
+PI_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/januarytomarch2024/75f7ecef&format=xls"
 file_name = "primary_income_account"
 ons_data_downloader(PI_link, file_name, "data", 6)#PI link is the name of the link created when downnloading the data, file name is the name we give the file, 'data' is the name of the tab the data is being downloaded from, 6 is the number of rows skipped to acquire the necessary info
 
@@ -102,7 +102,7 @@ plt.ylabel("£ billion", rotation=0, loc="top", labelpad=-70) #y-axis label - ro
 plt.title("Primary income account", fontweight="bold", fontname="Arial", fontsize="12") #Title
 customise_axes(ax) #calling upon the function with the various input parameters for charts
 ax.set_ylim(bottom=-40, top=40) #Setting the y-axis parameters
-desired_labels = ["Q1 2021", "Q1 2022", "Q1 2023","Q4 2023"]
+desired_labels = ["Q2 2021", "Q1 2022", "Q1 2023","Q1 2024"]
 #UPDATE the desired labels to what is wanted
 ax.set_xticks([primary_income["Unnamed: 0"].index[i] for i, label in enumerate(primary_income["Unnamed: 0"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #These 3 lines of code are allowing us the ability to decide what x labels we want on show
@@ -110,7 +110,7 @@ plt.show()
 
 # Chart 4 - Financial account
 
-FA_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/octobertodecember2023/aa911697&format=xls"
+FA_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/januarytomarch2024/25ce94e0&format=xls"
 file_name = "financial_account"
 ons_data_downloader(FA_link, file_name, "data", 6)#FA link is the name of the link created when downnloading the data, file name is the name we give the file, 'data' is the name of the tab the data is being downloaded from, 6 is the number of rows skipped to acquire the necessary info
 
@@ -125,7 +125,7 @@ financial_account[["Unnamed: 0", "Direct investment", "Portfolio investment", "O
 plt.legend(["Total", "Direct investment", "Portfolio investment", "Other investment", "Financial derivatives & employee stock options"], loc="upper center", bbox_to_anchor=(0.5,-0.12), ncol=2, frameon=False) #Setting the legend and its parameters (bbox moves the position, ncol is number of columns and the frame is removed)
 plt.ylabel("£ billion", rotation=0, loc="top", labelpad=-70) #y-axis label - rotation ensures it is read horizontal, location places it at the top of the axis and label pad positions it to the right
 plt.title("Financial account", fontweight="bold", fontname="Arial", fontsize="12") #Title
-desired_labels = ["Q1 2021", "Q1 2022", "Q1 2023","Q4 2023"]
+desired_labels = ["Q2 2021", "Q1 2022", "Q1 2023","Q1 2024"]
 #UPDATE the desired labels to what is wanted
 ax.set_xticks([financial_account["Unnamed: 0"].index[i] for i, label in enumerate(financial_account["Unnamed: 0"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #These 3 lines of code are allowing us the ability to decide what x labels we want on show
@@ -134,7 +134,7 @@ plt.show()
 
 #Chart 5 - International investment position
 
-IIP_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/octobertodecember2023/d33dda77&format=xls"
+IIP_link = "https://www.ons.gov.uk/generator?uri=/economy/nationalaccounts/balanceofpayments/bulletins/balanceofpayments/januarytomarch2024/eb443d6d&format=xls"
 file_name = "international_IP"
 ons_data_downloader(IIP_link, file_name, "data", 6)#IIP link is the name of the link created when downnloading the data, file name is the name we give the file, 'data' is the name of the tab the data is being downloaded from, 6 is the number of rows skipped to acquire the necessary info
 
@@ -151,7 +151,7 @@ plt.ylabel("£ billion", rotation=0, loc="top", labelpad=-77) #y-axis label - ro
 plt.title("International investment position", fontweight="bold", fontname="Arial", fontsize="12") #Title
 customise_axes(ax) #Calling upon this function again
 ax.set_ylim(bottom=-1500, top=1000) #Setting y-axis paramaters
-desired_labels = ["Q1 2021", "Q1 2022", "Q1 2023","Q4 2023"]
+desired_labels = ["Q2 2021", "Q1 2022", "Q1 2023","Q1 2024"]
 #UPDATE the desired labels to what is wanted
 ax.set_xticks([international_ip["Unnamed: 0"].index[i] for i, label in enumerate(international_ip["Unnamed: 0"]) if label in desired_labels])
 ax.set_xticklabels(desired_labels, rotation=0) #These 3 lines of code are allowing us the ability to decide what x labels we want on show
